@@ -138,14 +138,14 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
 
   return (
     <>
-      <section className="hero">
-        <div className="container">
-          <h1 className="hero-title">Copenhagen Chronicles</h1>
-          <p className="hero-subtitle muted">
+      <section className="masthead" aria-label="Blog title">
+        <div className="container masthead-inner">
+          <h1 className="masthead-title">Copenhagen Chronicles</h1>
+          <p className="masthead-subtitle muted">
             Weekend trips, student-budget breakdowns, and little life updates from abroad.
           </p>
         </div>
-    </section>
+      </section>
       <section id="featured" className="section">
         <div className="container">
           <div className="featured-card">
