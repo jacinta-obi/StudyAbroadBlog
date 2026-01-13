@@ -160,14 +160,20 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
 
   return (
     <>
-      <section className="masthead" aria-label="Blog title">
-        <div className="container masthead-inner">
-          <h1 className="masthead-title">Copenhagen Chronicles</h1>
-          <p className="masthead-subtitle muted">
+      <section className="splash" aria-label="Intro">
+        <div className="splash-overlay">
+          <p className="splash-kicker">Copenhagen • Østerbro • DIS</p>
+          <h1 className="splash-title">Copenhagen Chronicles</h1>
+          <p className="splash-subtitle">
             Weekend trips, student-budget breakdowns, and little life updates from abroad.
           </p>
-        </div>
-      </section>
+          <a className="scroll-cue" href="#featured" aria-label="Scroll to featured">
+      ↓
+    </a>
+  </div>
+</section>
+
+    <main className="content-over-hero">
       <section id="featured" className="section">
         <div className="container">
           <div className="featured-card">
@@ -252,11 +258,12 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
           <div className="card about">
             <h2>About</h2>
             <p className="muted">
-              Right now I’m living on Tåsingegade in Østerbro, Copenhagen (a DIS residential spot) and using it as my starting point for basically everything. This blog is my running diary of life abroad — the weekend trips, the real student-budget receipts, the coffee shops, and the random everyday highlights that make Copenhagen feel like home. You can expect regular posts with honest recaps (what I booked, what I spent, what I’d do differently), plus frequent TikToks along the way (<a href="https://www.tiktok.com/@addingup" target="_blank" rel="noreferrer">@addingup</a>)for the quick, real-time updates.
+              Right now I’m living on Tåsingegade in Østerbro, Copenhagen (a DIS residential spot) and using it as my starting point for basically everything. This blog is my running diary of life abroad — the weekend trips, the real student-budget receipts, the coffee shops, and the random everyday highlights that make Copenhagen feel like home. You can expect regular posts with honest recaps (what I booked, what I spent, what I’d do differently), plus frequent TikToks along the way (<a href="https://www.tiktok.com/@addingup" target="_blank" rel="noreferrer">@addingup</a>) for the quick, real-time updates.
             </p>
           </div>
         </div>
       </section>
+      </main>
     </>
   );
 }

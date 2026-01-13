@@ -152,27 +152,107 @@ a{ color:inherit; text-decoration:none; }
 
 .section{ padding:52px 0; }
 
-.masthead {
-  padding: 64px 0 32px;
+/* Stanford-style splash hero */
+.splash{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+
+  background-image: url("/copenhagen.jpg"); /* adjust filename */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
-.masthead-inner {
+/* This makes the content start below the hero and scroll over it */
+.content-over-hero{
+  position: relative;
+  z-index: 1;
+
+  /* push content down so the hero is visible first */
+  margin-top: 92vh;
+
+  /* “card” background so it’s readable over the image */
+  background: var(--bg);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -20px 60px rgba(0,0,0,0.25);
+}
+
+/* Optional: makes the transition look intentional */
+.content-over-hero::before{
+  content:"";
+  display:block;
+  height: 24px;
+}
+
+/* Give the first section breathing room under the rounded top */
+.content-over-hero .section:first-child{
+  padding-top: 64px;
+}
+
+.splash::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.45),
+    rgba(0,0,0,0.25) 40%,
+    rgba(0,0,0,0.55)
+  );
+}
+
+.splash-overlay{
+  position: relative;
+  z-index: 1;
   text-align: center;
+  padding: 120px 18px 70px;
+  max-width: 900px;
 }
 
-.masthead-title {
+.splash-kicker{
+  margin: 0 0 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+}
+
+.splash-title{
   margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(3.25rem, 9vw, 6.25rem);
   line-height: 0.92;
   letter-spacing: -0.05em;
+  color: white;
 }
 
-.masthead-subtitle {
+.splash-subtitle{
   margin: 18px auto 0;
   max-width: 62ch;
   font-size: 1.05rem;
+  color: rgba(255,255,255,0.88);
+}
+
+.scroll-cue{
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.35);
+  color: white;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+}
+.scroll-cue:hover{
+  transform: translateY(-2px);
 }
 
 /* Featured */
@@ -463,6 +543,15 @@ kbd{
   .mobile-menu-btn{ display:inline-flex; }
 }
 
+@media (max-width: 900px){
+  .splash{
+    background-attachment: scroll;
+  }
+  .content-over-hero{
+    margin-top: 85vh;
+  }
+}
+
 @media (max-width: 560px){
   .grid{ grid-template-columns: 1fr; }
   .search input{ width: 52vw; }
@@ -569,3 +658,5 @@ kbd{
   border: 1px solid var(--border);
   margin: 10px 0 14px;
 }
+
+
