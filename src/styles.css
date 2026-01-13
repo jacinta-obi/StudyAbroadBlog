@@ -170,13 +170,17 @@ a{ color:inherit; text-decoration:none; }
 /* This makes the content start below the hero and scroll over it */
 .content-over-hero{
   position: relative;
-  z-index: 1;
+  z-index: 2;
 
   /* push content down so the hero is visible first */
   margin-top: 92vh;
+    min-height: 100vh;   /* makes sure it fully covers as you scroll */
+
 
   /* “card” background so it’s readable over the image */
   background: var(--bg);
+    border-top: 1px solid var(--border);
+
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
   box-shadow: 0 -20px 60px rgba(0,0,0,0.25);
@@ -253,6 +257,32 @@ a{ color:inherit; text-decoration:none; }
 }
 .scroll-cue:hover{
   transform: translateY(-2px);
+}
+
+.newsletter-modal{
+  width: min(560px, 100%);
+  background: var(--bg);
+}
+
+.newsletter-modal .modal-head{
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+}
+
+/* Optional: make inputs match your theme too */
+.newsletter-modal .input{
+  background: var(--panel);
+}
+
+.newsletter-form{
+  display: grid;
+  gap: 14px;
+}
+
+.newsletter-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 /* Featured */

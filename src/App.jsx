@@ -377,6 +377,114 @@ function ContactPage() {
   );
 }
 
+function NewsletterModal() {
+  const [open, setOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const BUTTONDOWN_USERNAME = "jacinta";
+
+  // Always show on every visit (no localStorage)
+  useEffect(() => {
+    const t = setTimeout(() => setOpen(true), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Lock scroll when open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  function close() {
+    setOpen(false);
+    setSubmitted(false);
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Join the mailing list">
+      <div className="modal newsletter-modal">
+        <div className="modal-head">
+          <div>
+            <p className="eyebrow" style={{ marginBottom: 6 }}>Mailing list</p>
+            <h3 style={{ margin: 0 }}>Get new posts by email</h3>
+            <p className="muted" style={{ margin: "8px 0 0" }}>
+              You’ll get a confirmation email first (double opt-in), then you’re in.
+            </p>
+          </div>
+
+          <button className="icon-btn" type="button" onClick={close} aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {submitted ? (
+            <div className="success">
+              Almost done ✅ Check your inbox (and Spam/Promotions) to confirm your subscription.
+            </div>
+          ) : (
+            <>
+              {/* Hidden iframe so the form POST doesn't navigate away */}
+              <iframe
+                title="buttondown"
+                name="buttondown-iframe"
+                style={{ display: "none" }}
+              />
+
+              <form
+                action={`https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`}
+                method="post"
+                target="buttondown-iframe"
+                className="newsletter-form"
+                onSubmit={() => setSubmitted(true)}
+              >
+                <label htmlFor="bd-email">
+                  <span className="label">Enter your email</span>
+                </label>
+
+                <input
+                  className="input"
+                  type="email"
+                  name="email"
+                  id="bd-email"
+                  placeholder="you@email.com"
+                  required
+                />
+
+                {/* Buttondown embed flag */}
+                <input type="hidden" name="embed" value="1" />
+
+                {/* Optional tagging */}
+                <input type="hidden" name="tag" value="copenhagen-chronicles" />
+
+                <div className="newsletter-actions">
+                  <button className="btn btn-primary" type="submit">Subscribe</button>
+                  <button className="btn btn-ghost" type="button" onClick={close}>Not now</button>
+                </div>
+
+                <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+                  Powered by{" "}
+                  <a href={`https://buttondown.com/refer/${BUTTONDOWN_USERNAME}`} target="_blank" rel="noreferrer">
+                    Buttondown
+                  </a>
+                  .
+                </p>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function App() {
   const [posts] = useState(POSTS);
   const [query, setQuery] = useState("");
@@ -392,6 +500,7 @@ export default function App() {
 
   return (
     <>
+      <NewsletterModal />
       <Header query={query} setQuery={setQuery} />
 
       <Routes>
