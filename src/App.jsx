@@ -25,6 +25,8 @@ function uniqueTags(posts) {
 
 function Header({ query, setQuery }) {
   const searchRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
 
   function toggleTheme() {
     const current = document.documentElement.getAttribute("data-theme") || "dark";
@@ -52,12 +54,31 @@ function Header({ query, setQuery }) {
           <span className="brand-text">Copenhagen Chronicles</span>
         </Link>
 
-        <nav className="nav">
+        <nav className="nav desktop-nav">
           <Link to="/#featured">Featured</Link>
           <Link to="/#posts">Posts</Link>
           <Link to="/#about">About</Link>
           <Link to="/contact">Contact</Link>
         </nav>
+
+        <button
+          className="icon-btn mobile-menu-btn"
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="Open menu"
+          aria-expanded={menuOpen}
+        >
+          ☰
+        </button>
+
+        {menuOpen && (
+          <div className="mobile-nav">
+            <Link onClick={() => setMenuOpen(false)} to="/#featured">Featured</Link>
+            <Link onClick={() => setMenuOpen(false)} to="/#posts">Posts</Link>
+            <Link onClick={() => setMenuOpen(false)} to="/#about">About</Link>
+            <Link onClick={() => setMenuOpen(false)} to="/contact">Contact</Link>
+          </div>
+        )}
 
         <div className="header-actions">
           <label className="search">
@@ -230,7 +251,9 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
         <div className="container">
           <div className="card about">
             <h2>About</h2>
-            <p className="muted">This is now a tiny “real” blog app: routes + markdown + uploads.</p>
+            <p className="muted">
+              Right now I’m living on Tåsingegade in Østerbro, Copenhagen (a DIS residential spot) and using it as my starting point for basically everything. This blog is my running diary of life abroad — the weekend trips, the real student-budget receipts, the coffee shops, and the random everyday highlights that make Copenhagen feel like home. You can expect regular posts with honest recaps (what I booked, what I spent, what I’d do differently), plus frequent TikToks along the way (<a href="https://www.tiktok.com/@addingup" target="_blank" rel="noreferrer">@addingup</a>)for the quick, real-time updates.
+            </p>
           </div>
         </div>
       </section>
