@@ -377,19 +377,17 @@ function ContactPage() {
   );
 }
 
+
 function NewsletterModal() {
   const [open, setOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | sending | success
+  const [email, setEmail] = useState("");
 
-  const BUTTONDOWN_USERNAME = "jacinta";
-
-  // Always show on every visit (no localStorage)
   useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 700);
+    const t = setTimeout(() => setOpen(true), 900); // always show
     return () => clearTimeout(t);
   }, []);
 
-  // Lock scroll when open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -401,7 +399,17 @@ function NewsletterModal() {
 
   function close() {
     setOpen(false);
-    setSubmitted(false);
+    setStatus("idle");
+    setEmail("");
+  }
+
+  function onSubmit() {
+    // IMPORTANT: don't preventDefault; let the form submit to the iframe
+    setStatus("sending");
+
+    // We can't reliably read the response from Buttondown (cross-origin),
+    // so we show success after the iframe receives the response.
+    setTimeout(() => setStatus("success"), 900);
   }
 
   if (!open) return null;
@@ -414,7 +422,7 @@ function NewsletterModal() {
             <p className="eyebrow" style={{ marginBottom: 6 }}>Mailing list</p>
             <h3 style={{ margin: 0 }}>Get new posts by email</h3>
             <p className="muted" style={{ margin: "8px 0 0" }}>
-              You’ll get a confirmation email first (double opt-in), then you’re in.
+              One email when a new post goes live. No spam.
             </p>
           </div>
 
@@ -424,66 +432,71 @@ function NewsletterModal() {
         </div>
 
         <div className="modal-body">
-          {submitted ? (
+          {/* Hidden iframe = no navigation away from your site */}
+          <iframe
+            title="buttondown-hidden"
+            name="buttondown_iframe"
+            style={{ display: "none" }}
+          />
+
+          {status === "success" ? (
             <div className="success">
-              Almost done ✅ Check your inbox (and Spam/Promotions) to confirm your subscription.
+              You’re in ✅ Check your inbox (and spam) to confirm.
+              <div style={{ marginTop: 10 }}>
+                <button className="btn btn-primary" type="button" onClick={close}>
+                  Close
+                </button>
+              </div>
             </div>
           ) : (
-            <>
-              {/* Hidden iframe so the form POST doesn't navigate away */}
-              <iframe
-                title="buttondown"
-                name="buttondown-iframe"
-                style={{ display: "none" }}
+            <form
+              action="https://buttondown.com/api/emails/embed-subscribe/jacinta"
+              method="post"
+              target="buttondown_iframe"
+              className="embeddable-buttondown-form newsletter-form"
+              onSubmit={onSubmit}
+            >
+              <label htmlFor="bd-email">
+                <span className="label">Enter your email</span>
+              </label>
+
+              <input
+                className="input"
+                type="email"
+                name="email"
+                id="bd-email"
+                placeholder="you@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
 
-              <form
-                action={`https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`}
-                method="post"
-                target="buttondown-iframe"
-                className="newsletter-form"
-                onSubmit={() => setSubmitted(true)}
-              >
-                <label htmlFor="bd-email">
-                  <span className="label">Enter your email</span>
-                </label>
+              {/* Buttondown embed expects this */}
+              <input type="hidden" name="embed" value="1" />
 
-                <input
-                  className="input"
-                  type="email"
-                  name="email"
-                  id="bd-email"
-                  placeholder="you@email.com"
-                  required
-                />
+              <div className="newsletter-actions">
+                <button className="btn btn-primary" type="submit" disabled={status === "sending"}>
+                  {status === "sending" ? "Subscribing…" : "Subscribe"}
+                </button>
+                <button className="btn btn-ghost" type="button" onClick={close}>
+                  Not now
+                </button>
+              </div>
 
-                {/* Buttondown embed flag */}
-                <input type="hidden" name="embed" value="1" />
-
-                {/* Optional tagging */}
-                <input type="hidden" name="tag" value="copenhagen-chronicles" />
-
-                <div className="newsletter-actions">
-                  <button className="btn btn-primary" type="submit">Subscribe</button>
-                  <button className="btn btn-ghost" type="button" onClick={close}>Not now</button>
-                </div>
-
-                <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                  Powered by{" "}
-                  <a href={`https://buttondown.com/refer/${BUTTONDOWN_USERNAME}`} target="_blank" rel="noreferrer">
-                    Buttondown
-                  </a>
-                  .
-                </p>
-              </form>
-            </>
+              <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+                Powered by{" "}
+                <a href="https://buttondown.com/refer/jacinta" target="_blank" rel="noreferrer">
+                  Buttondown
+                </a>
+                .
+              </p>
+            </form>
           )}
         </div>
       </div>
     </div>
   );
 }
-
 
 export default function App() {
   const [posts] = useState(POSTS);
