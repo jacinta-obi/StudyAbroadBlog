@@ -49,7 +49,7 @@ function Header({ query, setQuery }) {
       <div className="container header-inner">
         <Link className="brand" to="/">
           <span className="brand-mark">✦</span>
-          <span className="brand-text">Jacinta’s Blog</span>
+          <span className="brand-text">Copenhagen Chronicles</span>
         </Link>
 
         <nav className="nav">
@@ -138,6 +138,14 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
 
   return (
     <>
+      <section className="hero">
+        <div className="container">
+          <h1 className="hero-title">Copenhagen Chronicles</h1>
+          <p className="hero-subtitle muted">
+            Weekend trips, student-budget breakdowns, and little life updates from abroad.
+          </p>
+        </div>
+    </section>
       <section id="featured" className="section">
         <div className="container">
           <div className="featured-card">
@@ -319,7 +327,7 @@ export default function App() {
 
       <footer className="site-footer">
         <div className="container footer-inner">
-          <p className="muted">© {new Date().getFullYear()} Jacinta’s Blog</p>
+          <p className="muted">© {new Date().getFullYear()} Copenhagen Chronicles</p>
           <Link className="muted" to="/#featured">
             Back to top ↑
           </Link>
