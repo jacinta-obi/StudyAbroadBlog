@@ -56,6 +56,7 @@ function Header({ query, setQuery }) {
           <Link to="/#featured">Featured</Link>
           <Link to="/#posts">Posts</Link>
           <Link to="/#about">About</Link>
+          <Link to="/contact">Contact</Link>
         </nav>
 
         <div className="header-actions">
@@ -291,6 +292,61 @@ function PostPage({ posts }) {
   );
 }
 
+function ContactPage() {
+  const formEndpoint = "https://formspree.io/f/xbddjzog";
+  const tiktokUrl = "https://www.tiktok.com/@addingup";
+
+  const sent = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sent") === "1";
+
+  return (
+    <div className="container section">
+      <div className="card contact-card">
+        <h1>Contact</h1>
+        <p className="muted">
+          Want to say hi, recommend a city, or ask about an itinerary? Send me a message below.
+        </p>
+
+        <div className="contact-links">
+          <a className="btn btn-primary" href={tiktokUrl} target="_blank" rel="noreferrer">
+            TikTok: @addingup →
+          </a>
+        </div>
+
+        {sent ? (
+          <div className="success">
+            Message sent ✅ I’ll get back to you soon.
+          </div>
+        ) : null}
+
+        <form className="contact-form" action={formEndpoint} method="POST">
+          {/* send them back to your site after submit */}
+          <input type="hidden" name="_redirect" value={`${window.location.origin}/contact?sent=1`} />
+          <input type="hidden" name="_subject" value="New message from Copenhagen Chronicles" />
+
+          <label>
+            <span className="label">Name</span>
+            <input className="input" name="name" placeholder="Your name" required />
+          </label>
+
+          <label>
+            <span className="label">Email</span>
+            <input className="input" type="email" name="email" placeholder="you@email.com" required />
+          </label>
+
+          <label>
+            <span className="label">Message</span>
+            <textarea className="textarea" name="message" rows={6} placeholder="Write your message…" required />
+          </label>
+
+          <button className="btn btn-primary" type="submit">
+            Send message
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [posts] = useState(POSTS);
   const [query, setQuery] = useState("");
@@ -323,6 +379,7 @@ export default function App() {
           }
         />
         <Route path="/post/:id" element={<PostPage posts={posts} />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Routes>
 
       <footer className="site-footer">

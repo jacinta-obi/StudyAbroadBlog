@@ -517,3 +517,24 @@ kbd{
   background: color-mix(in srgb, var(--panel) 85%, transparent);
   border-radius: 12px;
 }
+
+.contact-links { display:flex; gap:12px; flex-wrap:wrap; margin: 12px 0 18px; }
+.contact-form { display:grid; gap:14px; }
+.label { display:block; font-size:.9rem; margin-bottom:6px; opacity:.85; }
+
+.input, .textarea {
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+}
+.textarea { resize: vertical; }
+
+.success {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin: 10px 0 14px;
+}
