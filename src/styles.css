@@ -1,6 +1,13 @@
 :root {
   --font-body: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --container: 1120px; /* pick whatever feels right: 1000–1200px */
+}
+
+.container{
+  width: min(var(--container), 100%);
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 28px); /* phone -> laptop padding */
 }
 
 body {
@@ -229,9 +236,9 @@ a{ color:inherit; text-decoration:none; }
 .splash-title{
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: clamp(3.25rem, 9vw, 6.25rem);
-  line-height: 0.92;
+  line-height: 1;
   letter-spacing: -0.05em;
   color: white;
 }
@@ -422,6 +429,9 @@ a{ color:inherit; text-decoration:none; }
   flex-direction:column;
   gap:10px;
   min-height: 190px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .post-card h3{
   margin:2px 0 0;
@@ -582,7 +592,7 @@ kbd{
   }
 }
 
-@media (max-width: 560px){
+@media (max-width: 700px){
   .grid{ grid-template-columns: 1fr; }
   .search input{ width: 52vw; }
 }
@@ -599,6 +609,10 @@ kbd{
   height: 140px;
   object-fit: cover;
   display: block;
+
+  image-rendering: auto;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .cover-large img{
   height: 280px;
@@ -668,6 +682,83 @@ kbd{
   border-radius: 12px;
 }
 
+/* Image-background post tiles (Latest posts) */
+.post-tile{
+  border-radius: 22px;     /* your curved edges */
+  overflow: hidden;        /* THIS is what clips the background + overlay */
+  position: relative;
+  border: 1px solid var(--border);
+  min-height: 260px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
+
+.post-tile.has-bg{
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.post-tile-overlay{
+  position: absolute;
+  inset: 0;
+  /* overlay stays inside rounded corners because of overflow:hidden */
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.70),
+    rgba(0,0,0,0.25) 55%,
+    rgba(0,0,0,0.10)
+  );
+}
+
+.post-tile-content{
+  position: relative;
+  z-index: 1;
+  padding: 18px;
+  color: white;
+  width: 100%;
+}
+
+
+/* Make pills readable on image */
+.post-tile .pill{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.92);
+}
+
+.post-tile-title{
+  margin: 10px 0 6px;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.post-tile-excerpt{
+  margin: 0;
+  color: rgba(255,255,255,0.86);
+}
+
+.post-tile .meta{
+  margin: 0;          /* remove extra top spacing */
+  gap: 10px;          /* keeps bubble spacing */
+}
+
+/* Link styling on image */
+.post-tile-link{
+  color: rgba(255,255,255,0.92);
+}
+.post-tile-link:hover{
+  text-decoration: underline;
+}
+
+/* Hover effect */
+.post-tile:hover{
+  transform: translateY(-2px);
+}
+
+
 .contact-links { display:flex; gap:12px; flex-wrap:wrap; margin: 12px 0 18px; }
 .contact-form { display:grid; gap:14px; }
 .label { display:block; font-size:.9rem; margin-bottom:6px; opacity:.85; }
@@ -689,4 +780,43 @@ kbd{
   margin: 10px 0 14px;
 }
 
+.gallery-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.gallery-item{
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
+
+.gallery-item img{
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-cap{
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+  color: white;
+  font-weight: 650;
+  font-size: 14px;
+}
+
+@media (max-width: 940px){
+  .gallery-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px){
+  .gallery-grid{ grid-template-columns: 1fr; }
+  .gallery-item img{ height: 220px; }
+}
 

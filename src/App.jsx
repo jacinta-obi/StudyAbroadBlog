@@ -59,6 +59,7 @@ function Header({ query, setQuery }) {
           <Link to="/#posts">Posts</Link>
           <Link to="/#about">About</Link>
           <Link to="/contact">Contact</Link>
+          <Link to="/gallery">Gallery</Link>
         </nav>
 
         <button
@@ -77,6 +78,7 @@ function Header({ query, setQuery }) {
             <Link onClick={() => setMenuOpen(false)} to="/#posts">Posts</Link>
             <Link onClick={() => setMenuOpen(false)} to="/#about">About</Link>
             <Link onClick={() => setMenuOpen(false)} to="/contact">Contact</Link>
+            <Link onClick={() => setMenuOpen(false)} to="/gallery">Gallery</Link>
           </div>
         )}
 
@@ -102,31 +104,34 @@ function Header({ query, setQuery }) {
 }
 
 function PostCard({ post }) {
+  const hasBg = !!post.coverImage;
+
   return (
-    <article className="card post-card">
-      {post.coverImage ? (
-        <div className="cover">
-          <img src={post.coverImage} alt="" loading="lazy" />
+    <article
+      className={`post-tile ${hasBg ? "has-bg" : ""}`}
+      style={hasBg ? { backgroundImage: `url(${post.coverImage})` } : undefined}
+    >
+      <div className="post-tile-overlay" />
+      <div className="post-tile-content">
+        <div className="meta">
+          <span className="pill pill-strong">{post.tag || "General"}</span>
+          <span className="pill">{formatDate(post.date)}</span>
         </div>
-      ) : null}
 
-      <div className="meta">
-        <span className="pill pill-strong">{post.tag || "General"}</span>
-        <span className="pill">{formatDate(post.date)}</span>
-      </div>
+        <h3 className="post-tile-title">{post.title || "Untitled"}</h3>
+        <p className="post-tile-excerpt">{post.excerpt || ""}</p>
 
-      <h3>{post.title || "Untitled"}</h3>
-      <p className="excerpt">{post.excerpt || ""}</p>
-
-      <div className="actions">
-        <Link className="link-btn" to={`/post/${post.id}`}>
-          Read more →
-        </Link>
-        
+        <div className="actions">
+          <Link className="post-tile-link" to={`/post/${post.id}`}>
+            Read more →
+          </Link>
+        </div>
       </div>
     </article>
   );
 }
+
+
 
 function Home({ posts, query, tag, setTag, sort, setSort }) {
   const tags = useMemo(() => uniqueTags(posts), [posts]);
@@ -377,14 +382,46 @@ function ContactPage() {
   );
 }
 
+function GalleryPage({ posts }) {
+  const images = useMemo(() => {
+    return posts
+      .filter((p) => p.coverImage)
+      .map((p) => ({ src: p.coverImage, title: p.title, id: p.id }));
+  }, [posts]);
+
+  return (
+    <div className="container section">
+      <div className="card about" style={{ marginBottom: 14 }}>
+        <h1 style={{ marginTop: 0 }}>Gallery</h1>
+        <p className="muted" style={{ marginBottom: 0 }}>
+          Photos from posts + little moments abroad.
+        </p>
+      </div>
+
+      <div className="gallery-grid">
+        {images.map((img) => (
+          <Link key={img.id} to={`/post/${img.id}`} className="gallery-item" aria-label={`Open post: ${img.title}`}>
+            <img src={img.src} alt={img.title || "Gallery image"} loading="lazy" />
+            <div className="gallery-cap">
+              <span>{img.title}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {images.length === 0 ? <p className="muted">Add cover images to posts to populate the gallery.</p> : null}
+    </div>
+  );
+}
 
 function NewsletterModal() {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | sending | success
   const [email, setEmail] = useState("");
+  const iframeRef = useRef(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 900); // always show
+    const t = setTimeout(() => setOpen(true), 900);
     return () => clearTimeout(t);
   }, []);
 
@@ -392,9 +429,7 @@ function NewsletterModal() {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    return () => (document.body.style.overflow = prev);
   }, [open]);
 
   function close() {
@@ -404,12 +439,13 @@ function NewsletterModal() {
   }
 
   function onSubmit() {
-    // IMPORTANT: don't preventDefault; let the form submit to the iframe
+    // IMPORTANT: do NOT preventDefault
     setStatus("sending");
+  }
 
-    // We can't reliably read the response from Buttondown (cross-origin),
-    // so we show success after the iframe receives the response.
-    setTimeout(() => setStatus("success"), 900);
+  function onIframeLoad() {
+    // Only mark success if we were actually submitting
+    setStatus((s) => (s === "sending" ? "success" : s));
   }
 
   if (!open) return null;
@@ -426,26 +462,24 @@ function NewsletterModal() {
             </p>
           </div>
 
-          <button className="icon-btn" type="button" onClick={close} aria-label="Close">
-            ✕
-          </button>
+          <button className="icon-btn" type="button" onClick={close} aria-label="Close">✕</button>
         </div>
 
         <div className="modal-body">
-          {/* Hidden iframe = no navigation away from your site */}
+          {/* Hidden iframe keeps you on-page */}
           <iframe
+            ref={iframeRef}
             title="buttondown-hidden"
             name="buttondown_iframe"
             style={{ display: "none" }}
+            onLoad={onIframeLoad}
           />
 
           {status === "success" ? (
             <div className="success">
-              You’re in ✅ Check your inbox (and spam) to confirm.
+              Submitted ✅ Now check your inbox (and spam) for the Buttondown confirmation email.
               <div style={{ marginTop: 10 }}>
-                <button className="btn btn-primary" type="button" onClick={close}>
-                  Close
-                </button>
+                <button className="btn btn-primary" type="button" onClick={close}>Close</button>
               </div>
             </div>
           ) : (
@@ -471,24 +505,18 @@ function NewsletterModal() {
                 required
               />
 
-              {/* Buttondown embed expects this */}
-              <input type="hidden" name="embed" value="1" />
-
               <div className="newsletter-actions">
                 <button className="btn btn-primary" type="submit" disabled={status === "sending"}>
                   {status === "sending" ? "Subscribing…" : "Subscribe"}
                 </button>
-                <button className="btn btn-ghost" type="button" onClick={close}>
-                  Not now
-                </button>
+                <button className="btn btn-ghost" type="button" onClick={close}>Not now</button>
               </div>
 
               <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
                 Powered by{" "}
                 <a href="https://buttondown.com/refer/jacinta" target="_blank" rel="noreferrer">
                   Buttondown
-                </a>
-                .
+                </a>.
               </p>
             </form>
           )}
@@ -532,6 +560,7 @@ export default function App() {
         />
         <Route path="/post/:id" element={<PostPage posts={posts} />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/gallery" element={<GalleryPage posts={posts} />} />
       </Routes>
 
       <footer className="site-footer">
