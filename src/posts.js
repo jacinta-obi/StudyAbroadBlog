@@ -26,6 +26,10 @@ One sentence about the trip.
 ## What I’d do differently
 - ...
 `.trim(),
+gallery: [
+    { src: "/gallery/gate.jpg", alt: "Berlin skyline", caption: "Brandenburg Gate at golden hour" },
+    { src: "/gallery/hall.jpg", alt: "Museum Island", caption: "My €4.50 oat latte (worth it)" },
+  ],
   },
   
     {

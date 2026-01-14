@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./styles.css";
 import { POSTS } from "./posts";
+import { useLocation } from "react-router-dom";
+import { GALLERY } from "./gallery";
 
 
 const THEME_KEY = "blog_theme_v1";
@@ -273,11 +275,48 @@ function Home({ posts, query, tag, setTag, sort, setSort }) {
   );
 }
 
+function ScrollToHash() {
+  const { hash, pathname } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const el = document.querySelector(hash);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [hash, pathname]);
+
+  return null;
+}
+
 function PostPage({ posts }) {
   const { id } = useParams();
 
   const post = useMemo(() => posts.find((p) => p.id === id) || null, [posts, id]);
 
+  const ordered = useMemo(() => {
+  return posts.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  }, [posts]);
+
+const idx = ordered.findIndex((p) => p.id === id);
+const prevPost = idx > 0 ? ordered[idx - 1] : null;
+const nextPost = idx >= 0 && idx < ordered.length - 1 ? ordered[idx + 1] : null;
+
+
+useEffect(() => {
+    if (!post) return;
+
+    // Title
+    document.title = `${post.title} — Copenhagen Chronicles`;
+
+    // Meta description (optional but nice)
+    const desc = post.excerpt || "Copenhagen Chronicles";
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", desc);
+  }, [post]);
 
   if (!post) {
     return (
@@ -300,6 +339,30 @@ function PostPage({ posts }) {
           <Link className="link-btn" to="/">
             ← Back
           </Link>
+
+          <button
+            className="btn btn-ghost"
+            type="button"
+            onClick={async () => {
+              const url = window.location.href;
+              try {
+                await navigator.clipboard.writeText(url);
+                // optional: quick feedback
+                alert("Link copied!");
+              } catch {
+                // fallback for older browsers
+                const ta = document.createElement("textarea");
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+                alert("Link copied!");
+              }
+            }}
+          >
+            Share
+          </button>
         </div>
 
         <div className="card post-full">
@@ -320,6 +383,34 @@ function PostPage({ posts }) {
 
           <div className="post-markdown">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+          </div>
+
+          {(post.gallery?.length ?? 0) > 0 && (
+            <div className="divider" />
+          )}
+
+          {(post.gallery?.length ?? 0) > 0 && (
+            <section>
+              <h2>Photo gallery</h2>
+              <div className="gallery-grid">
+                {post.gallery.map((img, i) => (
+                  <figure key={i} className="gallery-item">
+                    <img src={img.src} alt={img.caption || post.title} loading="lazy" />
+                    {img.caption ? <figcaption className="gallery-cap">{img.caption}</figcaption> : null}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="post-nav">
+            {prevPost ? (
+              <Link className="btn btn-ghost" to={`/post/${prevPost.id}`}>← {prevPost.title}</Link>
+            ) : <span />}
+
+            {nextPost ? (
+              <Link className="btn btn-ghost" to={`/post/${nextPost.id}`}>{nextPost.title} →</Link>
+            ) : <span />}
           </div>
         </div>
       </div>
@@ -384,9 +475,23 @@ function ContactPage() {
 
 function GalleryPage({ posts }) {
   const images = useMemo(() => {
-    return posts
-      .filter((p) => p.coverImage)
-      .map((p) => ({ src: p.coverImage, title: p.title, id: p.id }));
+    const fromPosts = posts.flatMap((p) =>
+      (p.gallery ?? []).map((img, i) => ({
+        src: img.src,
+        caption: img.caption ?? p.title,
+        postId: p.id,          // so clicking can go to the post
+        key: `${p.id}-${i}`,
+      }))
+    );
+
+    const extras = (GALLERY ?? []).map((img, i) => ({
+      src: img.src,
+      caption: img.caption ?? "Photo",
+      postId: img.postId ?? null,
+      key: `extra-${i}`,
+    }));
+
+    return [...extras, ...fromPosts];
   }, [posts]);
 
   return (
@@ -399,20 +504,26 @@ function GalleryPage({ posts }) {
       </div>
 
       <div className="gallery-grid">
-        {images.map((img) => (
-          <Link key={img.id} to={`/post/${img.id}`} className="gallery-item" aria-label={`Open post: ${img.title}`}>
-            <img src={img.src} alt={img.title || "Gallery image"} loading="lazy" />
-            <div className="gallery-cap">
-              <span>{img.title}</span>
+        {images.map((img) =>
+          img.postId ? (
+            <Link key={img.key} to={`/post/${img.postId}`} className="gallery-item">
+              <img src={img.src} alt={img.caption} loading="lazy" />
+              <div className="gallery-cap">{img.caption}</div>
+            </Link>
+          ) : (
+            <div key={img.key} className="gallery-item">
+              <img src={img.src} alt={img.caption} loading="lazy" />
+              <div className="gallery-cap">{img.caption}</div>
             </div>
-          </Link>
-        ))}
+          )
+        )}
       </div>
 
-      {images.length === 0 ? <p className="muted">Add cover images to posts to populate the gallery.</p> : null}
+      {images.length === 0 ? <p className="muted">Add gallery images to posts to populate the gallery.</p> : null}
     </div>
   );
 }
+
 
 function NewsletterModal() {
   const [open, setOpen] = useState(false);
@@ -420,10 +531,28 @@ function NewsletterModal() {
   const [email, setEmail] = useState("");
   const iframeRef = useRef(null);
 
+  const SNOOZE_KEY = "cc_newsletter_snooze_until_v1";
+
+function getSnoozeUntil() {
+  const raw = localStorage.getItem(SNOOZE_KEY);
+  const n = raw ? Number(raw) : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+
+function snoozeForDays(days) {
+  const ms = days * 24 * 60 * 60 * 1000;
+  localStorage.setItem(SNOOZE_KEY, String(Date.now() + ms));
+}
+
+
   useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 900);
-    return () => clearTimeout(t);
-  }, []);
+  const until = getSnoozeUntil();
+  if (Date.now() < until) return; // snoozed — do not show
+
+  const t = setTimeout(() => setOpen(true), 900);
+  return () => clearTimeout(t);
+}, []);
+
 
   useEffect(() => {
     if (!open) return;
@@ -509,8 +638,23 @@ function NewsletterModal() {
                 <button className="btn btn-primary" type="submit" disabled={status === "sending"}>
                   {status === "sending" ? "Subscribing…" : "Subscribe"}
                 </button>
-                <button className="btn btn-ghost" type="button" onClick={close}>Not now</button>
+
+                <button className="btn btn-ghost" type="button" onClick={close}>
+                  Not now
+                </button>
+
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  onClick={() => {
+                    snoozeForDays(7);
+                    close();
+                  }}
+                >
+                  Don’t show again for 7 days
+                </button>
               </div>
+
 
               <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
                 Powered by{" "}
@@ -541,6 +685,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollToHash />
       <NewsletterModal />
       <Header query={query} setQuery={setQuery} />
 
